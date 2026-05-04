@@ -2,7 +2,7 @@ from langchain_openai import ChatOpenAI
 from app.models.schemas import GraphState, JDProfile
 import os
 
-_llm = ChatOpenAI(model=os.getenv("MODEL_NAME", "gpt-4o"), temperature=0)
+_llm = ChatOpenAI(model=os.getenv("MODEL_NAME", "gpt-4o"), temperature=0, base_url=os.getenv("OPENAI_BASE_URL"))
 _structured = _llm.with_structured_output(JDProfile)
 
 _SYSTEM = """You are a senior technical recruiter. Analyze the given job description and extract structured information.

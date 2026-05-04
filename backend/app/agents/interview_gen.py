@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 from app.models.schemas import GraphState, InterviewQuestions
 import os
 
-_llm = ChatOpenAI(model=os.getenv("MODEL_NAME", "gpt-4o"), temperature=0.3)
+_llm = ChatOpenAI(model=os.getenv("MODEL_NAME", "gpt-4o"), temperature=0.3, base_url=os.getenv("OPENAI_BASE_URL"))
 _structured = _llm.with_structured_output(InterviewQuestions)
 
 _SYSTEM = """You are an experienced technical interviewer. Generate targeted interview questions.

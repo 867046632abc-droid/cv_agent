@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 from app.models.schemas import GraphState, Intro
 import os
 
-_llm = ChatOpenAI(model=os.getenv("MODEL_NAME", "gpt-4o"), temperature=0.5)
+_llm = ChatOpenAI(model=os.getenv("MODEL_NAME", "gpt-4o"), temperature=0.5, base_url=os.getenv("OPENAI_BASE_URL"))
 _structured = _llm.with_structured_output(Intro)
 
 _SYSTEM_ZH = """你是一位求职辅导专家，请根据简历和JD撰写一段2分钟的中文自我介绍草稿。
