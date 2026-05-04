@@ -1,10 +1,11 @@
 import { getHistory } from "@/lib/api";
 import { AnalysisList } from "@/components/history/analysis-list";
+import type { HistoryItem } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function HistoryPage() {
-  let items = [];
+  let items: HistoryItem[] = [];
   try {
     items = await getHistory();
   } catch {
