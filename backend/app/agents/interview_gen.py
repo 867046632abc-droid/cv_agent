@@ -1,30 +1,23 @@
 import json
-from langchain_openai import ChatOpenAI
 from app.models.schemas import GraphState, InterviewQuestions
-import os
+from app.agents.utils import get_llm, parse_json_response
 
-_llm = ChatOpenAI(model=os.getenv("MODEL_NAME", "gpt-4o"), temperature=0.3, base_url=os.getenv("OPENAI_BASE_URL"))
-_structured = _llm.with_structured_output(InterviewQuestions)
+_llm = get_llm(temperature=0.3)
 
-_SYSTEM = """You are an experienced technical interviewer. Generate targeted interview questions.
-- Technical questions: probe deep understanding of the JD's core tech stack
-- Project questions: dig into the candidate's specific projects on their resume
-- Gap questions: probe the identified weak areas without being obvious
-Each question must have a practical answer hint (2-3 sentences max)."""
+_SYSTEM = """You are an experienced technical interviewer. Generate interview questions and respond ONLY with a JSON object.
+No markdown, no explanation, just the JSON object with these exact keys:
+- technical: array of objects, each with "question" (string) and "hint" (string)
+- project: array of objects, each with "question" (string) and "hint" (string)
+- gap: array of objects, each with "question" (string) and "hint" (string)
+Generate 3-4 items per category."""
 
 
 def gen_interview(state: GraphState) -> GraphState:
     jd_summary = json.dumps(state.jd_profile.model_dump(), ensure_ascii=False, indent=2)
     match_summary = json.dumps(state.match_report.model_dump(), ensure_ascii=False, indent=2)
-    result: InterviewQuestions = _structured.invoke([
+    resp = _llm.invoke([
         {"role": "system", "content": _SYSTEM},
-        {
-            "role": "user",
-            "content": (
-                f"JD Profile:\n{jd_summary}\n\n"
-                f"Match Analysis:\n{match_summary}\n\n"
-                f"Resume:\n{state.resume_text}"
-            ),
-        },
+        {"role": "user", "content": f"JD:\n{jd_summary}\n\nMatch Analysis:\n{match_summary}\n\nResume:\n{state.resume_text}"},
     ])
+    result = parse_json_response(resp.content, InterviewQuestions)
     return GraphState(**{**state.model_dump(), "interview_questions": result})
